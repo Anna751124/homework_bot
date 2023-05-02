@@ -28,9 +28,11 @@ HOMEWORK_VERDICTS = {
 
 logger = logging.getLogger(__name__)
 
+
 def check_tokens():
     """Проверка доступности переменных окружения."""
     return PRACTICUM_TOKEN and TELEGRAM_TOKEN and TELEGRAM_CHAT_ID
+
 
 def send_message(bot, message):
     """Отправка сообщения в Telegram-чат."""
