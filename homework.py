@@ -7,6 +7,7 @@ import sys
 import time
 import telegram
 
+
 load_dotenv()
 
 
@@ -30,21 +31,37 @@ logger = logging.getLogger(__name__)
 
 
 def check_tokens():
-    """Проверка доступности переменных окружения."""
-    return PRACTICUM_TOKEN and TELEGRAM_TOKEN and TELEGRAM_CHAT_ID
+    """Проверяет доступность переменных окружения."""
+    variables_data = {
+        'PRACTICUM_TOKEN': PRACTICUM_TOKEN,
+        'TELEGRAM_TOKEN': TELEGRAM_TOKEN,
+        'TELEGRAM_CHAT_ID': TELEGRAM_CHAT_ID
+    }
+    no_value = [
+        var_name for var_name, value in variables_data.items() if not value
+    ]
+    if no_value:
+        logger.critical(
+            'Отсутствует обязательная переменная '
+            f'окружения: {no_value}.'
+            'Программа будет принудительно остановлена.'
+        )
+        return False
+    logger.info('Необходимые переменные окружения доступны.')
+    return True
 
 
 def send_message(bot, message):
     """Отправка сообщения в Telegram-чат."""
+    logger.info(f'Бот отправил сообщение: {message}')
     try:
         bot.send_message(
             chat_id=TELEGRAM_CHAT_ID,
             text=message
         )
         logger.debug(f'Бот отправил сообщение: {message}')
-    except Exception:
-        error = 'Ошибка отправки сообщения в Telegram-чат!'
-        raise telegram.error.TelegramError(error)
+    except telegram.error.TelegramError as error:
+        logger.error(f'Ошибка при отправке сообщения: {error}', exc_info=True)
 
 
 def get_api_answer(current_timestamp):
@@ -85,19 +102,19 @@ def check_response(response):
             '"homeworks" должен иметь тип list'
         )
         raise TypeError(error)
-    return homeworks
+    return homeworks[0]
 
 
 def parse_status(homework):
     """Получаем статус последней домашней работы."""
-    if 'homework_name' not in homework:
+    if 'homework_name' not in homework.keys():
         error = (
             'Некорректный ответ от API - '
             'в словаре отсутствует ключ "homework_name"'
         )
         raise KeyError(error)
     homework_name = homework["homework_name"]
-    if 'status' not in homework:
+    if 'status' not in homework.keys():
         error = (
             'Некорректный ответ от API - '
             'в словаре отсутствует ключ "status"'
@@ -123,12 +140,13 @@ def main():
         raise SystemExit('Программа принудительно остановлена.')
     current_timestamp = int(time.time())
     previous_message = ''
+    message = ''
     while True:
         try:
             response = get_api_answer(current_timestamp)
             homeworks = check_response(response)
             if homeworks:
-                message = parse_status(homeworks[0])
+                message = parse_status(homeworks)
                 if message != previous_message:
                     send_message(bot, message)
                     previous_message = message
@@ -146,7 +164,7 @@ def main():
 
 
 if __name__ == '__main__':
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     handler = logging.StreamHandler(stream=sys.stdout)
     logger.addHandler(handler)
     formatter = logging.Formatter(
