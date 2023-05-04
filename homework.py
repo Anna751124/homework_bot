@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 def check_tokens() -> bool:
     """Проверяет доступность переменных окружения."""
     return all(
-        value is not None for value in 
+        value is not None for value in
         [PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
 
 
