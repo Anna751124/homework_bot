@@ -31,10 +31,10 @@ HOMEWORK_VERDICTS = {
 logger = logging.getLogger(__name__)
 
 
-def check_tokens()-> bool:
+def check_tokens() -> bool:
     """Проверяет доступность переменных окружения."""
-    return all(value is not None for value in [PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
-
+    return all(
+        value is not None for value in [PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
 
 
 def send_message(bot, message):
