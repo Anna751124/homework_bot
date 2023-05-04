@@ -1,11 +1,12 @@
-from dotenv import load_dotenv
-from http import HTTPStatus
 import logging
 import os
-import requests
 import sys
 import time
+from http import HTTPStatus
+
+import requests
 import telegram
+from dotenv import load_dotenv
 
 
 load_dotenv()
@@ -30,25 +31,10 @@ HOMEWORK_VERDICTS = {
 logger = logging.getLogger(__name__)
 
 
-def check_tokens():
+def check_tokens()-> bool:
     """Проверяет доступность переменных окружения."""
-    variables_data = {
-        'PRACTICUM_TOKEN': PRACTICUM_TOKEN,
-        'TELEGRAM_TOKEN': TELEGRAM_TOKEN,
-        'TELEGRAM_CHAT_ID': TELEGRAM_CHAT_ID
-    }
-    no_value = [
-        var_name for var_name, value in variables_data.items() if not value
-    ]
-    if no_value:
-        logger.critical(
-            'Отсутствует обязательная переменная '
-            f'окружения: {no_value}.'
-            'Программа будет принудительно остановлена.'
-        )
-        return False
-    logger.info('Необходимые переменные окружения доступны.')
-    return True
+    return all(value is not None for value in [PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
+
 
 
 def send_message(bot, message):
